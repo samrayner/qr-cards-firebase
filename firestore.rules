@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /games/{gameCode=**} {
+    	//allow read if the user is in the game
+      allow read: if exists(/databases/$(database)/documents/games/$(gameCode)/players/$(request.auth.uid));
+    }
+    
+    match /games/{gameCode} {
+    	//allow any user to create a new game
+      allow create: if request.auth.uid != null;
+      
+      //allow users to update or delete games they created
+      allow update, delete: if get(/databases/$(database)/documents/games/$(gameCode)).data.createdBy == request.auth.uid;
+      
+      //allow users to write to their own game state
+      match /players/{userID} {
+      	allow write: if request.auth.uid == userID;
+      }
+    }
+  }
+}
