@@ -16,30 +16,30 @@ const COLLECTION = COLLECTIONS.GAMES;
 const GAME_CODE = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/games/create', () => {
+describe('/games:create', () => {
   let db: Firestore;
 
-  describe('authenticated', () => {
+  describe('when authenticated', () => {
     beforeAll(async () => {
       db = await setup(USER_UID);
     });
 
     afterAll(() => teardown());
 
-    test('authenticated', async () => {
+    it('succeeds', async () => {
       const document = db.collection(COLLECTION).doc(GAME_CODE);
       await firebase.assertSucceeds(document.set(generateMockGame(USER_UID)));
     });
   });
 
-  describe('unauthenticated', () => {
+  describe('when unauthenticated', () => {
     beforeAll(async () => {
       db = await setup();
     });
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
+    it('fails', async () => {
       const document = db.collection(COLLECTION).doc(GAME_CODE);
       await firebase.assertFails(document.set(generateMockGame(USER_UID)));
     });

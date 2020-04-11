@@ -18,10 +18,10 @@ const GAME_CODE_1 = generateUID();
 const GAME_CODE_2 = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/games/update', () => {
+describe('/games:update', () => {
   let db: Firestore;
 
-  describe('authenticated', () => {
+  describe('when authenticated', () => {
     beforeAll(async () => {
       db = await setup(USER_UID, {
         [documentPath(COLLECTION, GAME_CODE_1)]: generateMockGame(USER_UID),
@@ -31,25 +31,25 @@ describe('/games/update', () => {
 
     afterAll(() => teardown());
 
-    test('disallow unless created by user', async () => {
+    it('fails unless created by user', async () => {
       const document = db.collection(COLLECTION).doc(GAME_CODE_2);
       await firebase.assertFails(document.update({}));
     });
 
-    test('allow if created by user', async () => {
+    it('succeeds if created by user', async () => {
       const document = db.collection(COLLECTION).doc(GAME_CODE_1);
       await firebase.assertSucceeds(document.update({}));
     });
   });
 
-  describe('unauthenticated', () => {
+  describe('when unauthenticated', () => {
     beforeAll(async () => {
       db = await setup();
     });
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
+    it('fails', async () => {
       const document = db.collection(COLLECTION).doc(GAME_CODE_1);
       await firebase.assertFails(document.update({}));
     });

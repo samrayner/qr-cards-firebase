@@ -4,7 +4,7 @@ export type Firestore = firebase.firestore.Firestore;
 export type DocumentReference = firebase.firestore.DocumentReference;
 
 let testIncrement = 0;
-let useRealProjectId = false;
+let useRealProjectID = false;
 const projectIdBase = `firestore-emulator-${Date.now()}`;
 
 function adjustTestIncrement() {
@@ -15,17 +15,17 @@ function getProjectId() {
   return `${projectIdBase}:${testIncrement}`;
 }
 
-function generateProjectId(): string {
-  return useRealProjectId ? 'qrcards-ae72c' : getProjectId();
+function generateProjectID(): string {
+  return useRealProjectID ? 'qrcards-ae72c' : getProjectId();
 }
 
 export function setUseRealProjectId() {
-  useRealProjectId = true;
+  useRealProjectID = true;
 }
 
 export function getAdminApp(): Firestore {
   const adminApp = firebase.initializeAdminApp({
-    projectId: generateProjectId(),
+    projectId: generateProjectID(),
   });
 
   return (adminApp.firestore() as any) as Firestore;
@@ -34,7 +34,7 @@ export function getAdminApp(): Firestore {
 export function getAuthedApp(userUID?: string): Firestore {
   const app = firebase.initializeTestApp({
     auth: userUID ? { uid: userUID } : undefined,
-    projectId: generateProjectId(),
+    projectId: generateProjectID(),
   });
 
   return (app.firestore() as any) as Firestore;
@@ -63,6 +63,6 @@ export async function setup(
 }
 
 export async function teardown() {
-  useRealProjectId = false;
+  useRealProjectID = false;
   return Promise.all(firebase.apps().map(app => app.delete()));
 }

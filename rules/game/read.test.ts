@@ -17,10 +17,10 @@ const GAME_CODE_1 = generateUID();
 const GAME_CODE_2 = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/games/read', () => {
+describe('/games:read', () => {
   let db: Firestore;
 
-  describe('authenticated', () => {
+  describe('when authenticated', () => {
     beforeAll(async () => {
       db = await setup(USER_UID, {
         [playerPath(GAME_CODE_1, USER_UID)]: { name: '' },
@@ -30,7 +30,7 @@ describe('/games/read', () => {
 
     afterAll(() => teardown());
 
-    test('disallow if not in game', async () => {
+    it('fails if not in game', async () => {
       const collection = db.collection(COLLECTION);
       const document = collection.doc(GAME_CODE_2);
 
@@ -38,7 +38,7 @@ describe('/games/read', () => {
       await firebase.assertFails(document.get());
     });
 
-    test('disallow on games that don\'t exist', async () => {
+    it('fails for games that don\'t exist', async () => {
       const collection = db.collection(COLLECTION);
       const document = collection.doc(generateUID());
 
@@ -46,7 +46,7 @@ describe('/games/read', () => {
       await firebase.assertFails(document.get());
     });
 
-    test('allow for a player in the game', async () => {
+    it('succeeds for a player in the game', async () => {
       const collection = db.collection(COLLECTION);
       const document = collection.doc(GAME_CODE_1);
 
@@ -55,14 +55,14 @@ describe('/games/read', () => {
     });
   });
 
-  describe('unauthenticated', () => {
+  describe('when unauthenticated', () => {
     beforeAll(async () => {
       db = await setup();
     });
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
+    it('fails', async () => {
       const collection = db.collection(COLLECTION);
       const document = collection.doc(GAME_CODE_1);
 

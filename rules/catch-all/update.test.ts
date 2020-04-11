@@ -16,30 +16,30 @@ const COLLECTION = COLLECTIONS.CATCH_ALL;
 const DOC_UID = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/catchAlls/update', () => {
+describe('/catchAlls:update', () => {
   let db: Firestore;
 
-  describe('authenticated', () => {
+  describe('when authenticated', () => {
     beforeAll(async () => {
       db = await setup(USER_UID);
     });
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
+    it('fails', async () => {
       const document = db.collection(COLLECTION).doc(DOC_UID);
       await firebase.assertFails(document.update(generateMockUpdateDocument()));
     });
   });
 
-  describe('unauthenticated', () => {
+  describe('when unauthenticated', () => {
     beforeAll(async () => {
       db = await setup();
     });
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
+    it('fails', async () => {
       const document = db.collection(COLLECTION).doc(DOC_UID);
       await firebase.assertFails(document.update(generateMockUpdateDocument()));
     });

@@ -17,17 +17,17 @@ const COLLECTION = COLLECTIONS.GAMES;
 const GAME_CODE = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/games/delete', () => {
+describe('/games:delete', () => {
   let db: Firestore;
 
-  describe('authenticated', () => {
+  describe('when authenticated', () => {
     beforeAll(async () => {
       db = await setup(USER_UID);
     });
 
     afterAll(() => teardown());
 
-    test('allow deletion by creator', async () => {
+    it('succeeds when deleted by creator', async () => {
       const adminDb = getAdminApp();
       await adminDb
         .collection(COLLECTIONS.GAMES)
@@ -38,7 +38,7 @@ describe('/games/delete', () => {
       await firebase.assertSucceeds(document.delete());
     });
 
-    test('disallow by non-creator', async () => {
+    it('fails when deleted by non-creator', async () => {
       const adminDb = getAdminApp();
       await adminDb
         .collection(COLLECTIONS.GAMES)
@@ -50,14 +50,14 @@ describe('/games/delete', () => {
     });
   });
 
-  describe('unauthenticated', () => {
+  describe('when unauthenticated', () => {
     beforeAll(async () => {
       db = await setup();
     });
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
+    it('fails', async () => {
       const document = db.collection(COLLECTION).doc(GAME_CODE);
       await firebase.assertFails(document.delete());
     });

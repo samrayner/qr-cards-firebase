@@ -15,17 +15,17 @@ const COLLECTION = COLLECTIONS.CATCH_ALL;
 const DOC_UID = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/catchAlls/read', () => {
+describe('/catchAlls:read', () => {
   let db: Firestore;
 
-  describe('authenticated', () => {
+  describe('when authenticated', () => {
     beforeAll(async () => {
       db = await setup(USER_UID);
     });
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
+    it('fails', async () => {
       const collection = db.collection(COLLECTION);
       const document = collection.doc(DOC_UID);
 
@@ -34,14 +34,14 @@ describe('/catchAlls/read', () => {
     });
   });
 
-  describe('unauthenticated', () => {
+  describe('when unauthenticated', () => {
     beforeAll(async () => {
       db = await setup();
     });
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
+    it('fails', async () => {
       const collection = db.collection(COLLECTION);
       const document = collection.doc(DOC_UID);
 
