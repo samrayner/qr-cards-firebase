@@ -2,10 +2,9 @@ import * as firebase from '@firebase/testing';
 
 import {
   COLLECTIONS,
-  generateId,
-  generateSecurityRecordAny,
-  generateUserId,
-  membershipPath,
+  generateUID,
+  generateUserUID,
+  playerPath,
 } from '../../test-helpers/contants';
 import {
   Firestore,
@@ -13,51 +12,43 @@ import {
   teardown,
 } from '../../test-helpers/firestore-helpers';
 
-const COLLECTION = COLLECTIONS.HOMESTEADS;
-const DOC_ID_1 = generateId();
-const DOC_ID_2 = generateId();
-const USER_ID = generateUserId();
+const COLLECTION = COLLECTIONS.GAMES;
+const GAME_CODE_1 = generateUID();
+const GAME_CODE_2 = generateUID();
+const USER_UID = generateUserUID();
 
-describe('/homesteads/read', () => {
+describe('/games/read', () => {
   let db: Firestore;
 
   describe('authenticated', () => {
     beforeAll(async () => {
-      db = await setup(USER_ID, {
-        [membershipPath(
-          COLLECTION,
-          DOC_ID_1,
-          USER_ID
-        )]: generateSecurityRecordAny(),
-        [membershipPath(
-          COLLECTION,
-          DOC_ID_2,
-          generateUserId()
-        )]: generateSecurityRecordAny(),
+      db = await setup(USER_UID, {
+        [playerPath(GAME_CODE_1, USER_UID)]: { name: '' },
+        [playerPath(GAME_CODE_2, generateUserUID())]: { name: '' }
       });
     });
 
     afterAll(() => teardown());
 
-    test('disallow without a membership record', async () => {
+    test('disallow if not in game', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(DOC_ID_2);
+      const document = collection.doc(GAME_CODE_2);
 
       await firebase.assertFails(collection.get());
       await firebase.assertFails(document.get());
     });
 
-    test('disallow on records that don\'t exist', async () => {
+    test('disallow on games that don\'t exist', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(generateId());
+      const document = collection.doc(generateUID());
 
       await firebase.assertFails(collection.get());
       await firebase.assertFails(document.get());
     });
 
-    test('allow with a membership record', async () => {
+    test('allow for a player in the game', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(DOC_ID_1);
+      const document = collection.doc(GAME_CODE_1);
 
       await firebase.assertFails(collection.get());
       await firebase.assertSucceeds(document.get());
@@ -73,7 +64,7 @@ describe('/homesteads/read', () => {
 
     test('disallow', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(DOC_ID_1);
+      const document = collection.doc(GAME_CODE_1);
 
       await firebase.assertFails(collection.get());
       await firebase.assertFails(document.get());

@@ -2,9 +2,9 @@ import * as firebase from '@firebase/testing';
 
 import {
   COLLECTIONS,
-  generateId,
-  generateUserId,
-  generateMockUpdateDocument,
+  generateUID,
+  generateUserUID,
+  generateMockUpdateDocument
 } from '../../test-helpers/contants';
 import {
   Firestore,
@@ -13,21 +13,21 @@ import {
 } from '../../test-helpers/firestore-helpers';
 
 const COLLECTION = COLLECTIONS.CATCH_ALL;
-const DOC_ID = generateId();
-const USER_ID = generateUserId();
+const DOC_UID = generateUID();
+const USER_UID = generateUserUID();
 
 describe('/catchAlls/update', () => {
   let db: Firestore;
 
   describe('authenticated', () => {
     beforeAll(async () => {
-      db = await setup(USER_ID);
+      db = await setup(USER_UID);
     });
 
     afterAll(() => teardown());
 
     test('disallow', async () => {
-      const document = db.collection(COLLECTION).doc(DOC_ID);
+      const document = db.collection(COLLECTION).doc(DOC_UID);
       await firebase.assertFails(document.update(generateMockUpdateDocument()));
     });
   });
@@ -40,7 +40,7 @@ describe('/catchAlls/update', () => {
     afterAll(() => teardown());
 
     test('disallow', async () => {
-      const document = db.collection(COLLECTION).doc(DOC_ID);
+      const document = db.collection(COLLECTION).doc(DOC_UID);
       await firebase.assertFails(document.update(generateMockUpdateDocument()));
     });
   });

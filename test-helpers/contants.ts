@@ -1,14 +1,13 @@
 import * as uuid from 'uuid/v4';
 
-type Collections =
-  | 'catchAlls'
-  | 'homesteads'
-  | 'users';
-
 export enum COLLECTIONS {
   CATCH_ALL = 'catchAlls',
-  HOMESTEADS = 'homesteads',
-  USERS = 'users',
+  GAMES = 'games',
+  PLAYERS = 'players',
+}
+
+export function generateMockGame(creatorUID: string, data: Object = {}): Object {
+  return { createdBy: creatorUID, ...data };
 }
 
 export function generateMockDocument(data: Object = {}): Object {
@@ -19,35 +18,18 @@ export function generateMockUpdateDocument(data: Object = {}): Object {
   return { name: 'updated document name', ...data };
 }
 
-export function generateMockDocumentWithHomesteadId(homesteadId: string) {
-  return generateMockDocument({ homesteadId });
-}
-
-export function generateMockUpdateDocumentWithHomesteadId(homesteadId: string) {
-  return generateMockUpdateDocument({ homesteadId });
-}
-
-export function generateSecurityRecordAny(): Object {
-  return { role: 'any' };
-}
-
-export function generateSecurityRecordOwner(): Object {
-  return { role: 'owner' };
-}
-
 export function documentPath(...parts: string[]): string {
   return parts.join('/');
 }
 
-export function membershipPath(
-  collection: Collections,
-  recordId: string,
-  userId: string
+export function playerPath(
+  gameCode: string,
+  playerUID: string
 ): string {
-  return documentPath(collection, recordId, 'members', userId);
+  return documentPath(COLLECTIONS.GAMES, gameCode, COLLECTIONS.PLAYERS, playerUID);
 }
 
-export function generateId({
+export function generateUID({
   append = '',
   prepend = '',
 }: {
@@ -67,6 +49,6 @@ export function generateId({
   return id;
 }
 
-export function generateUserId(): string {
-  return generateId({ prepend: 'USER' });
+export function generateUserUID(): string {
+  return generateUID({ prepend: 'USER' });
 }

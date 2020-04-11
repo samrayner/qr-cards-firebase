@@ -2,7 +2,7 @@ import * as firebase from '@firebase/testing';
 
 import {
   COLLECTIONS,
-  generateMockDocument,
+  generateMockGame,
   generateUID,
   generateUserUID,
 } from '../../test-helpers/contants';
@@ -12,11 +12,11 @@ import {
   teardown,
 } from '../../test-helpers/firestore-helpers';
 
-const COLLECTION = COLLECTIONS.CATCH_ALL;
-const DOC_UID = generateUID();
+const COLLECTION = COLLECTIONS.GAMES;
+const GAME_CODE = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/catchAlls/create', () => {
+describe('/games/create', () => {
   let db: Firestore;
 
   describe('authenticated', () => {
@@ -26,9 +26,9 @@ describe('/catchAlls/create', () => {
 
     afterAll(() => teardown());
 
-    test('disallow', async () => {
-      const document = db.collection(COLLECTION).doc(DOC_UID);
-      await firebase.assertFails(document.set(generateMockDocument()));
+    test('authenticated', async () => {
+      const document = db.collection(COLLECTION).doc(GAME_CODE);
+      await firebase.assertSucceeds(document.set(generateMockGame(USER_UID)));
     });
   });
 
@@ -40,8 +40,8 @@ describe('/catchAlls/create', () => {
     afterAll(() => teardown());
 
     test('disallow', async () => {
-      const document = db.collection(COLLECTION).doc(DOC_UID);
-      await firebase.assertFails(document.set(generateMockDocument()));
+      const document = db.collection(COLLECTION).doc(GAME_CODE);
+      await firebase.assertFails(document.set(generateMockGame(USER_UID)));
     });
   });
 });

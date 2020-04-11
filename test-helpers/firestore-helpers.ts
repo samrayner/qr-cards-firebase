@@ -31,9 +31,9 @@ export function getAdminApp(): Firestore {
   return (adminApp.firestore() as any) as Firestore;
 }
 
-export function getAuthedApp(userUid?: string): Firestore {
+export function getAuthedApp(userUID?: string): Firestore {
   const app = firebase.initializeTestApp({
-    auth: userUid ? { uid: userUid } : undefined,
+    auth: userUID ? { uid: userUID } : undefined,
     projectId: generateProjectId(),
   });
 
@@ -41,11 +41,11 @@ export function getAuthedApp(userUid?: string): Firestore {
 }
 
 export async function setup(
-  userUid?: string,
+  userUID?: string,
   data: any = {}
 ): Promise<Firestore> {
   adjustTestIncrement();
-  const db = getAuthedApp(userUid);
+  const db = getAuthedApp(userUID);
 
   if (!data || !Object.keys(data).length) {
     return db;

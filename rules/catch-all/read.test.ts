@@ -2,8 +2,8 @@ import * as firebase from '@firebase/testing';
 
 import {
   COLLECTIONS,
-  generateId,
-  generateUserId,
+  generateUID,
+  generateUserUID,
 } from '../../test-helpers/contants';
 import {
   Firestore,
@@ -12,22 +12,22 @@ import {
 } from '../../test-helpers/firestore-helpers';
 
 const COLLECTION = COLLECTIONS.CATCH_ALL;
-const DOC_ID = generateId();
-const USER_ID = generateUserId();
+const DOC_UID = generateUID();
+const USER_UID = generateUserUID();
 
 describe('/catchAlls/read', () => {
   let db: Firestore;
 
   describe('authenticated', () => {
     beforeAll(async () => {
-      db = await setup(USER_ID);
+      db = await setup(USER_UID);
     });
 
     afterAll(() => teardown());
 
     test('disallow', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(DOC_ID);
+      const document = collection.doc(DOC_UID);
 
       await firebase.assertFails(collection.get());
       await firebase.assertFails(document.get());
@@ -43,7 +43,7 @@ describe('/catchAlls/read', () => {
 
     test('disallow', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(DOC_ID);
+      const document = collection.doc(DOC_UID);
 
       await firebase.assertFails(collection.get());
       await firebase.assertFails(document.get());

@@ -1,33 +1,23 @@
+rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // GENERIC //
+    // FUNCTIONS //
 
-    function hasRoleForResource(targetResource, targetRoles) {
-      return targetResource.data.role in targetRoles;
-    }
-
-    // USERS //
-
-  	function isAuthenticated() {
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    function getUserResource(userId) {
-      return get(/databases/$(database)/documents/users/$(userId));
+    function isUser(userUID) {
+      return request.auth.uid == userUID;
     }
 
-    // HOMESTEAD //
-
-    function getHomesteadMemberPath(homesteadId) {
-      return /databases/$(database)/documents/homesteads/$(homesteadId)/members/$(request.auth.uid);
+    function isInGame(gameCode) {
+      return exists(/databases/$(database)/documents/games/$(gameCode)/players/$(request.auth.uid));
     }
 
-    function getHomesteadMembershipResource(homesteadId) {
-      return get(getHomesteadMemberPath(homesteadId));
-    }
-
-    function hasHomesteadAccess(homesteadId) {
-      return exists(getHomesteadMemberPath(homesteadId));
+    function getGame(gameCode) {
+      return get(/databases/$(database)/documents/games/$(gameCode));
     }
 
     // ROUTES //
@@ -36,14 +26,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    match /homesteads/{homesteadId} {
-      allow read: if hasHomesteadAccess(homesteadId);
-      allow update: if hasRoleForResource(getHomesteadMembershipResource(homesteadId), ['owner']);
-      allow create: if getUserResource(request.auth.uid).data.ownedHomestead == '';
+    match /games/{gameCode=**} {
+      allow read: if isInGame(gameCode);
     }
-
-    match /users/{userId} {
-      allow read, update: if request.auth.uid == userId;
+    
+    match /games/{gameCode} {
+      allow create: if isAuthenticated();
+      allow update, delete: if getGame(gameCode).data.createdBy == request.auth.uid;
+      
+      match /players/{userUID} {
+      	allow write: if isUser(userUID);
+      }
     }
   }
 }
