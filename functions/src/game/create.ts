@@ -1,13 +1,12 @@
 import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
 import { CallableContext } from 'firebase-functions/lib/providers/https';
 import { getFirestore } from '../admin';
 
 function generateGameCode(length: number) {
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    var charactersLength = characters.length;
-    var result = '';
-    for ( var i = 0; i < length; i++ ) {
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const charactersLength = characters.length;
+    let result = '';
+    for (let i = 0; i < length; i++) {
        result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
@@ -15,8 +14,8 @@ function generateGameCode(length: number) {
 
 async function generateUniqueGameCode(
     firestore: FirebaseFirestore.Firestore, 
-    attempt: number = 1,
-    generator: (length: number, attempt: number) => string = generateGameCode
+    generator: (length: number, attempt: number) => string = generateGameCode,
+    attempt: number = 1
 ): Promise<string> {
     if (attempt > 5) {
         throw new functions.https.HttpsError('already-exists', 'Exceeded game code generation attempts (5)');
@@ -24,32 +23,38 @@ async function generateUniqueGameCode(
 
     const gameCode: string = generator(4, attempt);
     const game = await firestore.collection('games').doc(gameCode).get();
+    
     if (game.exists) {
-        return await generateUniqueGameCode(firestore, attempt+1, generator);
+        return await generateUniqueGameCode(firestore, generator, attempt+1);
     } else {
         return gameCode;
     }
 }
 
-export const createGame = functions.https.onCall(async (data: any, context: CallableContext): Promise<string> => {
-    const firestore = getFirestore();
-    const gameCode: string = await generateUniqueGameCode(firestore);
+export async function _createGame(
+    firestore: any,
+    userUID: string,
+    generator: (length: number, attempt: number) => string = generateGameCode
+): Promise<string> {
+    const gameCode: string = await generateUniqueGameCode(firestore, generator);
+    const gameReference = firestore.collection('games').doc(gameCode);
 
+    await gameReference.set({ 
+        createdBy: userUID, 
+        createdAt: new Date()
+    });
+
+    await gameReference.collection('players').doc(userUID).set({
+        joinedAt: new Date()
+    });
+
+    return gameCode
+}
+
+export const createGame = functions.https.onCall(async (data: any, context: CallableContext): Promise<string> => {
     if (!context.auth) { 
         throw new functions.https.HttpsError('permission-denied', 'Not authorized');
     }
 
-    const userUID = context.auth?.uid;
-    const gameReference = firestore.collection('games').doc(gameCode);
-
-    await gameReference.set({ 
-        createdBy: context.auth?.uid, 
-        createdAt: admin.firestore.Timestamp.fromDate(new Date()) 
-    });
-
-    await gameReference.collection('players').doc(userUID).set({
-        joinedAt: admin.firestore.Timestamp.fromDate(new Date())
-    });
-
-    return gameCode
+    return await _createGame(getFirestore(), context.auth.uid)
 });
