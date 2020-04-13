@@ -1,5 +1,5 @@
 import * as functions from 'firebase-functions';
-import { CallableContext } from 'firebase-functions/lib/providers/https';
+import { CallableContext, HttpsError } from 'firebase-functions/lib/providers/https';
 import { getFirestore } from '../admin';
 
 function generateGameCode(length: number) {
@@ -18,7 +18,7 @@ async function generateUniqueGameCode(
     attempt: number = 1
 ): Promise<string> {
     if (attempt > 5) {
-        throw new functions.https.HttpsError('already-exists', 'Exceeded game code generation attempts (5)');
+        throw new HttpsError('already-exists', 'Exceeded game code generation attempts (5)');
     }
 
     const gameCode: string = generator(4, attempt);
@@ -32,7 +32,7 @@ async function generateUniqueGameCode(
 }
 
 export async function _createGame(
-    firestore: any,
+    firestore: FirebaseFirestore.Firestore,
     userUID: string,
     generator: (length: number, attempt: number) => string = generateGameCode
 ): Promise<string> {
@@ -48,13 +48,13 @@ export async function _createGame(
         joinedAt: new Date()
     });
 
-    return gameCode
+    return gameCode;
 }
 
 export const createGame = functions.https.onCall(async (data: any, context: CallableContext): Promise<string> => {
     if (!context.auth) { 
-        throw new functions.https.HttpsError('permission-denied', 'Not authorized');
+        throw new HttpsError('permission-denied', 'Not authorized');
     }
 
-    return await _createGame(getFirestore(), context.auth.uid)
+    return await _createGame(getFirestore(), context.auth.uid);
 });
