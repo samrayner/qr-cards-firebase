@@ -1,5 +1,10 @@
 import * as functions from 'firebase-functions';
-import { CallableContext, HttpsError } from 'firebase-functions/lib/providers/https';
+
+import { 
+    CallableContext, 
+    HttpsError 
+} from 'firebase-functions/lib/providers/https';
+
 import { getFirestore } from '../admin';
 
 function generateGameCode(length: number) {
@@ -40,12 +45,15 @@ export async function _createGame(
     const gameReference = firestore.collection('games').doc(gameCode);
 
     await gameReference.set({ 
+        code: gameCode,
         createdBy: userUID, 
         createdAt: new Date()
     });
 
     await gameReference.collection('players').doc(userUID).set({
-        joinedAt: new Date()
+        uid: userUID,
+        joinedAt: new Date(),
+        ready: false
     });
 
     return gameCode;

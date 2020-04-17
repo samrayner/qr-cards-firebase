@@ -1,5 +1,10 @@
 import * as functions from 'firebase-functions';
-import { CallableContext, HttpsError } from 'firebase-functions/lib/providers/https';
+
+import { 
+    CallableContext, 
+    HttpsError 
+} from 'firebase-functions/lib/providers/https';
+
 import { getFirestore } from '../admin';
 
 export async function _joinGame(

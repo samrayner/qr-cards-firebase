@@ -1,21 +1,26 @@
+import * as Test from 'firebase-functions-test';
+Test().mockConfig({});
+
 import {
     generateUserUID, 
     COLLECTIONS, 
     generateMockGame,
 } from '../../../test-helpers/contants';
+
 import {
-    Firestore,
     getAdminApp,
     setup,
     teardown,
 } from '../../../test-helpers/firestore-helpers';
+
 import { _createGame } from '../../src';
+
 import { HttpsError } from 'firebase-functions/lib/providers/https';
 
 const USER_UID = generateUserUID();
 
 describe('createGame', () => {
-    let db: Firestore;
+    let db: FirebaseFirestore.Firestore;
     
     beforeAll(async () => {
         await setup(USER_UID);

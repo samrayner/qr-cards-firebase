@@ -1,3 +1,6 @@
+import * as Test from 'firebase-functions-test';
+Test().mockConfig({});
+
 import {
     generateUserUID, 
     COLLECTIONS, 
@@ -5,7 +8,6 @@ import {
     documentPath,
 } from '../../../test-helpers/contants';
 import {
-    Firestore,
     getAdminApp,
     setup,
     teardown,
@@ -16,7 +18,7 @@ import { HttpsError } from 'firebase-functions/lib/providers/https';
 const USER_UID = generateUserUID();
 
 describe('joinGame', () => {
-    let db: Firestore;
+    let db: FirebaseFirestore.Firestore;
     
     beforeAll(async () => {
         await setup(USER_UID, {
