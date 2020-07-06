@@ -12,33 +12,33 @@ import {
   teardown,
 } from '../../test-helpers/firestore-helpers';
 
-const COLLECTION = COLLECTIONS.GAMES;
-const GAME_CODE_1 = generateUID();
-const GAME_CODE_2 = generateUID();
+const COLLECTION = COLLECTIONS.LOBBIES;
+const LOBBY_CODE_1 = generateUID();
+const LOBBY_CODE_2 = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/games:read', () => {
+describe('/lobbies:read', () => {
   let db: Firestore;
 
   describe('when authenticated', () => {
     beforeAll(async () => {
       db = await setup(USER_UID, {
-        [playerPath(GAME_CODE_1, USER_UID)]: { name: '' },
-        [playerPath(GAME_CODE_2, generateUserUID())]: { name: '' }
+        [playerPath(LOBBY_CODE_1, USER_UID)]: { name: '' },
+        [playerPath(LOBBY_CODE_2, generateUserUID())]: { name: '' }
       });
     });
 
     afterAll(() => teardown());
 
-    it('fails if not in game', async () => {
+    it('fails if not in lobby', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(GAME_CODE_2);
+      const document = collection.doc(LOBBY_CODE_2);
 
       await firebase.assertFails(collection.get());
       await firebase.assertFails(document.get());
     });
 
-    it('fails for games that don\'t exist', async () => {
+    it('fails for lobbies that do not exist', async () => {
       const collection = db.collection(COLLECTION);
       const document = collection.doc(generateUID());
 
@@ -46,9 +46,9 @@ describe('/games:read', () => {
       await firebase.assertFails(document.get());
     });
 
-    it('succeeds for a player in the game', async () => {
+    it('succeeds for a player in the lobby', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(GAME_CODE_1);
+      const document = collection.doc(LOBBY_CODE_1);
 
       await firebase.assertFails(collection.get());
       await firebase.assertSucceeds(document.get());
@@ -64,7 +64,7 @@ describe('/games:read', () => {
 
     it('fails', async () => {
       const collection = db.collection(COLLECTION);
-      const document = collection.doc(GAME_CODE_1);
+      const document = collection.doc(LOBBY_CODE_1);
 
       await firebase.assertFails(collection.get());
       await firebase.assertFails(document.get());

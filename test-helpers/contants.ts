@@ -2,11 +2,11 @@ import * as uuid from 'uuid/v4';
 
 export enum COLLECTIONS {
   CATCH_ALL = 'catchAlls',
-  GAMES = 'games',
+  LOBBIES = 'lobbies',
   PLAYERS = 'players',
 }
 
-export function generateMockGame(creatorUID: string, data: Object = {}): Object {
+export function generateMockLobby(creatorUID: string, data: Object = {}): Object {
   return { createdBy: creatorUID, ...data };
 }
 
@@ -23,10 +23,10 @@ export function documentPath(...parts: string[]): string {
 }
 
 export function playerPath(
-  gameCode: string,
+  lobbyCode: string,
   playerUID: string
 ): string {
-  return documentPath(COLLECTIONS.GAMES, gameCode, COLLECTIONS.PLAYERS, playerUID);
+  return documentPath(COLLECTIONS.LOBBIES, lobbyCode, COLLECTIONS.PLAYERS, playerUID);
 }
 
 export function generateUID({

@@ -2,7 +2,7 @@ import * as firebase from '@firebase/testing';
 
 import {
   COLLECTIONS,
-  generateMockGame,
+  generateMockLobby,
   generateUID,
   generateUserUID
 } from '../../test-helpers/contants';
@@ -13,11 +13,11 @@ import {
   teardown,
 } from '../../test-helpers/firestore-helpers';
 
-const COLLECTION = COLLECTIONS.GAMES;
-const GAME_CODE = generateUID();
+const COLLECTION = COLLECTIONS.LOBBIES;
+const LOBBY_CODE = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/games:delete', () => {
+describe('/lobbies:delete', () => {
   let db: Firestore;
 
   describe('when authenticated', () => {
@@ -30,22 +30,22 @@ describe('/games:delete', () => {
     it('succeeds when deleted by creator', async () => {
       const adminDb = getAdminApp();
       await adminDb
-        .collection(COLLECTIONS.GAMES)
-        .doc(GAME_CODE)
-        .set(generateMockGame(USER_UID));
+        .collection(COLLECTIONS.LOBBIES)
+        .doc(LOBBY_CODE)
+        .set(generateMockLobby(USER_UID));
 
-      const document = db.collection(COLLECTION).doc(GAME_CODE);
+      const document = db.collection(COLLECTION).doc(LOBBY_CODE);
       await firebase.assertSucceeds(document.delete());
     });
 
     it('fails when deleted by non-creator', async () => {
       const adminDb = getAdminApp();
       await adminDb
-        .collection(COLLECTIONS.GAMES)
-        .doc(GAME_CODE)
+        .collection(COLLECTIONS.LOBBIES)
+        .doc(LOBBY_CODE)
         .set({ 'createdBy': '' });
 
-      const document = db.collection(COLLECTION).doc(GAME_CODE);
+      const document = db.collection(COLLECTION).doc(LOBBY_CODE);
       await firebase.assertFails(document.delete());
     });
   });
@@ -58,7 +58,7 @@ describe('/games:delete', () => {
     afterAll(() => teardown());
 
     it('fails', async () => {
-      const document = db.collection(COLLECTION).doc(GAME_CODE);
+      const document = db.collection(COLLECTION).doc(LOBBY_CODE);
       await firebase.assertFails(document.delete());
     });
   });

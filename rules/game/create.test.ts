@@ -2,7 +2,7 @@ import * as firebase from '@firebase/testing';
 
 import {
   COLLECTIONS,
-  generateMockGame,
+  generateMockLobby,
   generateUID,
   generateUserUID,
 } from '../../test-helpers/contants';
@@ -12,11 +12,11 @@ import {
   teardown,
 } from '../../test-helpers/firestore-helpers';
 
-const COLLECTION = COLLECTIONS.GAMES;
-const GAME_CODE = generateUID();
+const COLLECTION = COLLECTIONS.LOBBIES;
+const LOBBY_CODE = generateUID();
 const USER_UID = generateUserUID();
 
-describe('/games:create', () => {
+describe('/lobbies:create', () => {
   let db: Firestore;
 
   describe('when authenticated', () => {
@@ -27,8 +27,8 @@ describe('/games:create', () => {
     afterAll(() => teardown());
 
     it('succeeds', async () => {
-      const document = db.collection(COLLECTION).doc(GAME_CODE);
-      await firebase.assertSucceeds(document.set(generateMockGame(USER_UID)));
+      const document = db.collection(COLLECTION).doc(LOBBY_CODE);
+      await firebase.assertSucceeds(document.set(generateMockLobby(USER_UID)));
     });
   });
 
@@ -40,8 +40,8 @@ describe('/games:create', () => {
     afterAll(() => teardown());
 
     it('fails', async () => {
-      const document = db.collection(COLLECTION).doc(GAME_CODE);
-      await firebase.assertFails(document.set(generateMockGame(USER_UID)));
+      const document = db.collection(COLLECTION).doc(LOBBY_CODE);
+      await firebase.assertFails(document.set(generateMockLobby(USER_UID)));
     });
   });
 });

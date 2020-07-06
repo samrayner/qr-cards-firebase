@@ -4,7 +4,7 @@ Test().mockConfig({});
 import {
     generateUserUID, 
     COLLECTIONS, 
-    generateMockGame,
+    generateMockLobby,
     documentPath,
 } from '../../../test-helpers/contants';
 import {
@@ -12,39 +12,39 @@ import {
     setup,
     teardown,
 } from '../../../test-helpers/firestore-helpers';
-import { _joinGame } from '../../src';
+import { _joinLobby } from '../../src';
 import { HttpsError } from 'firebase-functions/lib/providers/https';
 
 const USER_UID = generateUserUID();
 
-describe('joinGame', () => {
+describe('joinLobby', () => {
     let db: FirebaseFirestore.Firestore;
     
     beforeAll(async () => {
         await setup(USER_UID, {
-            [documentPath(COLLECTIONS.GAMES, 'YYYY')]: generateMockGame('')
+            [documentPath(COLLECTIONS.LOBBIES, 'YYYY')]: generateMockLobby('')
         });
         db = getAdminApp();
     });
     
     afterAll(() => teardown());
     
-    describe('when the game exists', () => {
-        it('adds the authenticated user as a player to the game', async () => {
-            await _joinGame(db, USER_UID, 'YYYY');
-            const gameRef = db.collection(COLLECTIONS.GAMES).doc('AAAA');
-            const player = await gameRef.collection(COLLECTIONS.PLAYERS).doc(USER_UID).get();
+    describe('when the lobby exists', () => {
+        it('adds the authenticated user as a player to the lobby', async () => {
+            await _joinLobby(db, USER_UID, 'YYYY');
+            const lobbyRef = db.collection(COLLECTIONS.LOBBIES).doc('AAAA');
+            const player = await lobbyRef.collection(COLLECTIONS.PLAYERS).doc(USER_UID).get();
             expect(player.exists);
         });
     });
     
-    describe('when the game does not exist', () => {
+    describe('when the lobby does not exist', () => {
         it('fails with a not found error', async () => {
             expect.assertions(1);
             try {
-                await _joinGame(db, USER_UID, 'NNNN');
+                await _joinLobby(db, USER_UID, 'NNNN');
             } catch (e) {
-                expect(e).toEqual(new HttpsError('not-found', 'Game not found.'));
+                expect(e).toEqual(new HttpsError('not-found', 'Lobby not found.'));
             }
         });
     });

@@ -12,12 +12,12 @@ service cloud.firestore {
       return request.auth.uid == userUID;
     }
 
-    function isInGame(gameCode) {
-      return exists(/databases/$(database)/documents/games/$(gameCode)/players/$(request.auth.uid));
+    function isInLobby(lobbyCode) {
+      return exists(/databases/$(database)/documents/lobbys/$(lobbyCode)/players/$(request.auth.uid));
     }
 
-    function getGame(gameCode) {
-      return get(/databases/$(database)/documents/games/$(gameCode));
+    function getLobby(lobbyCode) {
+      return get(/databases/$(database)/documents/lobbys/$(lobbyCode));
     }
 
     // ROUTES //
@@ -26,13 +26,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    match /games/{gameCode=**} {
-      allow read: if isInGame(gameCode);
+    match /lobbys/{lobbyCode=**} {
+      allow read: if isInLobby(lobbyCode);
     }
     
-    match /games/{gameCode} {
+    match /lobbys/{lobbyCode} {
       allow create: if isAuthenticated();
-      allow update, delete: if getGame(gameCode).data.createdBy == request.auth.uid;
+      allow update, delete: if getLobby(lobbyCode).data.createdBy == request.auth.uid;
       
       match /players/{userUID} {
       	allow write: if isUser(userUID);
