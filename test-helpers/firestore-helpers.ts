@@ -1,5 +1,7 @@
 import * as firebase from '@firebase/testing';
 
+export type Firestore = FirebaseFirestore.Firestore;
+
 let testIncrement = 0;
 let useRealProjectID = false;
 const projectIdBase = `firestore-emulator-${Date.now()}`;
@@ -20,27 +22,27 @@ export function setUseRealProjectId() {
   useRealProjectID = true;
 }
 
-export function getAdminApp(): FirebaseFirestore.Firestore {
+export function getAdminApp(): Firestore {
   const adminApp = firebase.initializeAdminApp({
     projectId: generateProjectID(),
   });
 
-  return (adminApp.firestore() as any) as FirebaseFirestore.Firestore;
+  return (adminApp.firestore() as any) as Firestore;
 }
 
-export function getAuthedApp(userUID?: string): FirebaseFirestore.Firestore {
+export function getAuthedApp(userUID?: string): Firestore {
   const app = firebase.initializeTestApp({
     auth: userUID ? { uid: userUID } : undefined,
     projectId: generateProjectID(),
   });
 
-  return (app.firestore() as any) as FirebaseFirestore.Firestore;
+  return (app.firestore() as any) as Firestore;
 }
 
 export async function setup(
   userUID?: string,
   data: any = {}
-): Promise<FirebaseFirestore.Firestore> {
+): Promise<Firestore> {
   adjustTestIncrement();
   const db = getAuthedApp(userUID);
 
