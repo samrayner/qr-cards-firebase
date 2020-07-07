@@ -1,4 +1,5 @@
 import * as functions from 'firebase-functions';
+import { v4 as uuid } from 'uuid';
 
 import { 
     CallableContext, 
@@ -6,6 +7,7 @@ import {
 } from 'firebase-functions/lib/providers/https';
 
 import { getFirestore } from '../admin';
+import { PlayerProfileRole } from '../models';
 
 function generateLobbyCode(length: number) {
     const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -47,13 +49,16 @@ export async function _createLobby(
     await lobbyReference.set({ 
         code: code,
         createdBy: userUID, 
-        createdAt: new Date()
+        createdAt: new Date(),
+        gameUID: uuid()
     });
 
-    await lobbyReference.collection('players').doc(userUID).set({
+    await lobbyReference.collection('playerProfiles').doc(userUID).set({
         uid: userUID,
         joinedAt: new Date(),
-        ready: false
+        isReady: false,
+        role: PlayerProfileRole.Thief,
+        turn: 0
     });
 
     return code;

@@ -6,6 +6,7 @@ import {
 } from 'firebase-functions/lib/providers/https';
 
 import { getFirestore } from '../admin';
+import { JoinLobbyRequest } from '../models';
 
 export async function _joinLobby(
     firestore: FirebaseFirestore.Firestore,
@@ -33,6 +34,8 @@ export const joinLobby = functions
                 throw new HttpsError('permission-denied', 'Not authorized');
             }
 
-            await _joinLobby(getFirestore(), context.auth.uid, JSON.parse(data).code);
+            const request: JoinLobbyRequest = JSON.parse(data);
+
+            await _joinLobby(getFirestore(), context.auth.uid, request.code);
         }
     );
