@@ -1,5 +1,4 @@
 import * as functions from 'firebase-functions';
-import { v4 as uuid } from 'uuid';
 
 import { 
     CallableContext, 
@@ -49,8 +48,7 @@ export async function _createLobby(
     await lobbyReference.set({ 
         code: code,
         createdBy: userUID, 
-        createdAt: new Date(),
-        gameUID: uuid()
+        createdAt: new Date()
     });
 
     await lobbyReference.collection('playerProfiles').doc(userUID).set({

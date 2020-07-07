@@ -33,7 +33,11 @@ service cloud.firestore {
     match /lobbies/{lobbyCode} {
       allow create: if isAuthenticated();
       allow update, delete: if getLobby(lobbyCode).data.createdBy == request.auth.uid;
-      
+
+      match /playerProfiles/{userUID=**} {
+        allow read: if isInLobby(lobbyCode);
+      }
+
       match /playerProfiles/{userUID} {
       	allow write: if isUser(userUID);
       }
