@@ -59,10 +59,15 @@ export async function _createLobby(
     return code;
 }
 
-export const createLobby = functions.https.onCall(async (data: any, context: CallableContext): Promise<string> => {
-    if (!context.auth) { 
-        throw new HttpsError('permission-denied', 'Not authorized');
-    }
+export const createLobby = functions
+    .region('europe-west1')
+    .https
+    .onCall(
+        async (data: any, context: CallableContext): Promise<string> => {
+            if (!context.auth) { 
+                throw new HttpsError('permission-denied', 'Not authorized');
+            }
 
-    return await _createLobby(getFirestore(), context.auth.uid);
-});
+            return await _createLobby(getFirestore(), context.auth.uid);
+        }
+    );

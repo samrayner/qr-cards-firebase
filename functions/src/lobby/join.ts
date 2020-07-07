@@ -24,10 +24,15 @@ export async function _joinLobby(
     });
 }
 
-export const joinLobby = functions.https.onCall(async (data: any, context: CallableContext): Promise<void> => {
-    if (!context.auth) { 
-        throw new HttpsError('permission-denied', 'Not authorized');
-    }
+export const joinLobby = functions
+    .region('europe-west1')
+    .https
+    .onCall(
+        async (data: any, context: CallableContext): Promise<void> => {
+            if (!context.auth) { 
+                throw new HttpsError('permission-denied', 'Not authorized');
+            }
 
-    await _joinLobby(getFirestore(), context.auth.uid, JSON.parse(data).code);
-});
+            await _joinLobby(getFirestore(), context.auth.uid, JSON.parse(data).code);
+        }
+    );
