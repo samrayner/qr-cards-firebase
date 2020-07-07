@@ -6,12 +6,9 @@ import {
 } from 'firebase-functions/lib/providers/https';
 
 import { getFirestore } from '../admin';
-import { 
-    PlayerProfileRole, 
-    JoinLobbyRequest
-} from '../models';
+import { LeaveLobbyRequest } from '../models';
 
-export async function _joinLobby(
+export async function _leaveLobby(
     firestore: FirebaseFirestore.Firestore,
     userUID: string,
     code: string
@@ -23,16 +20,10 @@ export async function _joinLobby(
         throw new HttpsError('not-found', 'Lobby not found.');
     }
 
-    await lobbyReference.collection('playerProfiles').doc(userUID).set({
-        uid: userUID,
-        joinedAt: new Date(),
-        isReady: false,
-        role: PlayerProfileRole.Thief,
-        turn: 0
-    });
+    await lobbyReference.collection('playerProfiles').doc(userUID).delete();
 }
 
-export const joinLobby = functions
+export const leaveLobby = functions
     .region('europe-west1')
     .https
     .onCall(
@@ -41,8 +32,8 @@ export const joinLobby = functions
                 throw new HttpsError('permission-denied', 'Not authorized');
             }
 
-            const request: JoinLobbyRequest = JSON.parse(data);
+            const request: LeaveLobbyRequest = JSON.parse(data);
 
-            await _joinLobby(getFirestore(), context.auth.uid, request.code);
+            await _leaveLobby(getFirestore(), context.auth.uid, request.code);
         }
     );

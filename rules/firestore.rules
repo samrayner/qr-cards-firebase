@@ -39,7 +39,7 @@ service cloud.firestore {
       }
 
       match /playerProfiles/{userUID} {
-      	allow write: if isUser(userUID);
+      	allow write, delete: if isUser(userUID);
       }
     }
   }
