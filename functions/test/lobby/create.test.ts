@@ -34,7 +34,7 @@ describe('createLobby', () => {
             const lobbyCode = await _createLobby(db, USER_UID);
             const lobbyRef = db.collection(COLLECTIONS.LOBBIES).doc(lobbyCode);
             const lobby = await lobbyRef.get();
-            const player = await lobbyRef.collection(COLLECTIONS.PLAYERS).doc(USER_UID).get();
+            const player = await lobbyRef.collection(COLLECTIONS.PLAYER_PROFILES).doc(USER_UID).get();
             
             expect(lobby.get('createdBy')).toEqual(USER_UID);
             expect(player.exists);

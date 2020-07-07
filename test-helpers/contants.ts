@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 export enum COLLECTIONS {
   CATCH_ALL = 'catchAlls',
   LOBBIES = 'lobbies',
-  PLAYERS = 'players',
+  PLAYER_PROFILES = 'playerProfiles',
 }
 
 export function generateMockLobby(creatorUID: string, data: Object = {}): Object {
@@ -26,7 +26,7 @@ export function playerPath(
   lobbyCode: string,
   playerUID: string
 ): string {
-  return documentPath(COLLECTIONS.LOBBIES, lobbyCode, COLLECTIONS.PLAYERS, playerUID);
+  return documentPath(COLLECTIONS.LOBBIES, lobbyCode, COLLECTIONS.PLAYER_PROFILES, playerUID);
 }
 
 export function generateUID({

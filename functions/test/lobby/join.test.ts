@@ -33,7 +33,7 @@ describe('joinLobby', () => {
         it('adds the authenticated user as a player to the lobby', async () => {
             await _joinLobby(db, USER_UID, 'YYYY');
             const lobbyRef = db.collection(COLLECTIONS.LOBBIES).doc('AAAA');
-            const player = await lobbyRef.collection(COLLECTIONS.PLAYERS).doc(USER_UID).get();
+            const player = await lobbyRef.collection(COLLECTIONS.PLAYER_PROFILES).doc(USER_UID).get();
             expect(player.exists);
         });
     });

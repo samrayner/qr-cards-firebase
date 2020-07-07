@@ -20,7 +20,7 @@ export async function _joinLobby(
         throw new HttpsError('not-found', 'Lobby not found.');
     }
 
-    await lobbyReference.collection('players').doc(userUID).set({
+    await lobbyReference.collection('playerProfiles').doc(userUID).set({
         joinedAt: new Date()
     });
 }
