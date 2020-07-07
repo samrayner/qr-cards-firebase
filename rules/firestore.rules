@@ -13,11 +13,11 @@ service cloud.firestore {
     }
 
     function isInLobby(lobbyCode) {
-      return exists(/databases/$(database)/documents/lobbys/$(lobbyCode)/players/$(request.auth.uid));
+      return exists(/databases/$(database)/documents/lobbies/$(lobbyCode)/players/$(request.auth.uid));
     }
 
     function getLobby(lobbyCode) {
-      return get(/databases/$(database)/documents/lobbys/$(lobbyCode));
+      return get(/databases/$(database)/documents/lobbies/$(lobbyCode));
     }
 
     // ROUTES //
@@ -26,11 +26,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    match /lobbys/{lobbyCode=**} {
+    match /lobbies/{lobbyCode=**} {
       allow read: if isInLobby(lobbyCode);
     }
     
-    match /lobbys/{lobbyCode} {
+    match /lobbies/{lobbyCode} {
       allow create: if isAuthenticated();
       allow update, delete: if getLobby(lobbyCode).data.createdBy == request.auth.uid;
       
