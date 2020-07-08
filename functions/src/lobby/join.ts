@@ -26,9 +26,7 @@ export async function _joinLobby(
     await lobbyReference.collection('playerProfiles').doc(userUID).set({
         uid: userUID,
         joinedAt: new Date(),
-        isReady: false,
-        role: PlayerProfileRole.Thief,
-        turn: 0
+        isReady: false
     });
 }
 

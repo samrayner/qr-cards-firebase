@@ -54,9 +54,7 @@ export async function _createLobby(
     await lobbyReference.collection('playerProfiles').doc(userUID).set({
         uid: userUID,
         joinedAt: new Date(),
-        isReady: false,
-        role: PlayerProfileRole.Thief,
-        turn: 0
+        isReady: false
     });
 
     return code;
