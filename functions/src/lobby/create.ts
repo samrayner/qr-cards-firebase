@@ -6,7 +6,7 @@ import {
 } from 'firebase-functions/lib/providers/https';
 
 import { getFirestore } from '../admin';
-import { PlayerProfileRole } from '../models';
+import { PlayerProfile, Lobby } from '../models';
 
 function generateLobbyCode(length: number) {
     const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -18,23 +18,44 @@ function generateLobbyCode(length: number) {
     return result;
  }
 
-async function generateUniqueLobbyCode(
+interface LobbyDocument {
+    code: string;
+    reference: FirebaseFirestore.DocumentReference<Lobby>
+}
+
+async function createLobbyDocument(
     firestore: FirebaseFirestore.Firestore, 
+    userUID: string,
     generator: (length: number, attempt: number) => string = generateLobbyCode,
     attempt: number = 1
-): Promise<string> {
+): Promise<LobbyDocument> {
     if (attempt > 5) {
         throw new HttpsError('already-exists', 'Exceeded lobby code generation attempts (5)');
     }
 
     const code: string = generator(4, attempt);
-    const lobby = await firestore.collection('lobbies').doc(code).get();
-    
-    if (lobby.exists) {
-        return await generateUniqueLobbyCode(firestore, generator, attempt+1);
-    } else {
-        return code;
+
+    const lobbyReference = firestore
+        .collection('lobbies')
+        .withConverter(Lobby.firestoreConverter)
+        .doc(code);
+
+    try {
+        await lobbyReference.create(
+            new Lobby(
+                code,
+                new Date(),
+                userUID
+            )
+        );
+    } catch(error) {
+        return await createLobbyDocument(firestore, userUID, generator, attempt+1);
     }
+
+    return {
+        code: code,
+        reference: lobbyReference
+    };
 }
 
 export async function _createLobby(
@@ -42,22 +63,22 @@ export async function _createLobby(
     userUID: string,
     generator: (length: number, attempt: number) => string = generateLobbyCode
 ): Promise<string> {
-    const code: string = await generateUniqueLobbyCode(firestore, generator);
-    const lobbyReference = firestore.collection('lobbies').doc(code);
+    const lobbyDocument = await createLobbyDocument(firestore, userUID, generator);
 
-    await lobbyReference.set({ 
-        code: code,
-        createdBy: userUID, 
-        createdAt: new Date()
-    });
+    await lobbyDocument
+        .reference
+        .collection('playerProfiles')
+        .withConverter(PlayerProfile.firestoreConverter)
+        .doc(userUID)
+        .set(
+            new PlayerProfile(
+                userUID,
+                new Date(),
+                false
+            )
+        )
 
-    await lobbyReference.collection('playerProfiles').doc(userUID).set({
-        uid: userUID,
-        joinedAt: new Date(),
-        isReady: false
-    });
-
-    return code;
+    return lobbyDocument.code;
 }
 
 export const createLobby = functions

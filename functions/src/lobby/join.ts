@@ -6,9 +6,10 @@ import {
 } from 'firebase-functions/lib/providers/https';
 
 import { getFirestore } from '../admin';
-import { 
-    PlayerProfileRole, 
-    JoinLobbyRequest
+import {
+    JoinLobbyRequest,
+    Lobby,
+    PlayerProfile
 } from '../models';
 
 export async function _joinLobby(
@@ -16,18 +17,32 @@ export async function _joinLobby(
     userUID: string,
     code: string
 ): Promise<void> {
-    const lobbyReference = firestore.collection('lobbies').doc(code);
+    const lobbyReference = firestore
+        .collection('lobbies')
+        .withConverter(Lobby.firestoreConverter)
+        .doc(code);
+
     const lobby = await lobbyReference.get();
 
     if (!lobby.exists) {
         throw new HttpsError('not-found', 'Lobby not found.');
     }
 
-    await lobbyReference.collection('playerProfiles').doc(userUID).set({
-        uid: userUID,
-        joinedAt: new Date(),
-        isReady: false
-    });
+    if (lobby.data()?.gameUID !== undefined) {
+        throw new HttpsError('deadline-exceeded', 'Game has started.');
+    }
+
+    await lobbyReference
+        .collection('playerProfiles')
+        .withConverter(PlayerProfile.firestoreConverter)
+        .doc(userUID)
+        .set(
+            new PlayerProfile(
+                userUID,
+                new Date(),
+                false
+            )
+        )
 }
 
 export const joinLobby = functions
