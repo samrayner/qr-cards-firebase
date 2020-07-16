@@ -29,7 +29,7 @@ service cloud.firestore {
     match /lobbies/{lobbyCode=**} {
       allow read: if isInLobby(lobbyCode);
     }
-    
+
     match /lobbies/{lobbyCode} {
       allow create: if isAuthenticated();
       allow update, delete: if getLobby(lobbyCode).data.createdBy == request.auth.uid;

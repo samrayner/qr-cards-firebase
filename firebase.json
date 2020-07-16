@@ -1,25 +1,24 @@
 {
-  "emulators": {
-    "firestore": {
-      "host": "127.0.0.1",
-      "port": "8080"
-    },
-    "functions": {
-      "host": "127.0.0.1",
-      "port": "5001"
-    }
-  },
   "firestore": {
     "rules": "rules/firestore.rules",
     "predeploy": [
-      "npm run lint:rules",
       "npm run test:rules"
     ]
   },
   "functions": {
     "predeploy": [
-      "npm run lint:functions",
       "npm run test:functions"
     ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": true
+    }
   }
 }
