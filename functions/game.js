@@ -6,7 +6,9 @@ admin.init()
 const { Game, Player, PlayerRole, PlayerProfile } = require('./models')
 const { v4: uuid } = require('uuid')
 
-exports.create = functions.firestore
+exports.create = functions
+  .region('europe-west1')
+  .firestore
   .document('/lobbies/{lobbyCode}/playerProfiles/{playerUID}')
   .onUpdate(async (change, context) => {
     const db = admin.getFirestore()
