@@ -25,7 +25,8 @@ class Lobby {
           gameUID: lobby.gameUID
         }
       },
-      fromFirestore (data) {
+      fromFirestore (snapshot, options) {
+        const data = snapshot.data(options)
         return new Lobby(
           data.code,
           data.createdAt,

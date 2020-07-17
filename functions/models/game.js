@@ -28,7 +28,8 @@ class Game {
           endedAt: game.endedAt
         }
       },
-      fromFirestore (data) {
+      fromFirestore (snapshot, options) {
+        const data = snapshot.data(options)
         return new Game(
           data.uid,
           data.startedAt,

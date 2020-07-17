@@ -28,7 +28,8 @@ class Player {
           score: player.score
         }
       },
-      fromFirestore (data) {
+      fromFirestore (snapshot, options) {
+        const data = snapshot.data(options)
         return new Player(
           data.uid,
           data.role,

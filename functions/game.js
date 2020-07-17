@@ -1,18 +1,15 @@
 const functions = require('firebase-functions')
+
 const admin = require('./admin')
+admin.init()
+
 const { Game, Player, PlayerRole, PlayerProfile } = require('./models')
 const { v4: uuid } = require('uuid')
 
-/**
-* Firestore-triggered function which uppercases a string field of a document.
-*/
 exports.create = functions.firestore
   .document('/lobbies/{lobbyCode}/playerProfiles/{playerUID}')
   .onUpdate(async (change, context) => {
-    if (!context.auth) {
-      throw new functions.HttpsError('permission-denied', 'Not authorized')
-    }
-
+    const db = admin.getFirestore()
     const lobbyCode = context.params.lobbyCode
 
     const playerProfilesReference = db
@@ -40,10 +37,12 @@ exports.create = functions.firestore
           gameUID,
           new Date(),
           0,
-          new Map()
+          {},
+          null
         )
       )
     } catch (error) {
+      console.log(error)
       return
     }
 

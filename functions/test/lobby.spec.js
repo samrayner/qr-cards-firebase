@@ -146,10 +146,24 @@ describe('Joining a lobby', () => {
     })
 
     it('adds the authenticated user as a player to the lobby', async () => {
-      await test.wrap(app.lobby.join)('{ "code": "ZZZZ" }', auth)
       const lobbyRef = db.collection('lobbies').doc('ZZZZ')
+      await lobbyRef.update({ gameUID: null })
+      await test.wrap(app.lobby.join)('{ "code": "ZZZZ" }', auth)
       const player = await lobbyRef.collection('playerProfiles').doc(user.uid).get()
       expect(player.exists)
+    })
+
+    it('fails if the game has started', async () => {
+      const lobbyRef = db.collection('lobbies').doc('ZZZZ')
+      await lobbyRef.update({ gameUID: 'abc123' })
+      try {
+        await test.wrap(app.lobby.join)('{ "code": "ZZZZ" }', auth)
+        expect.fail()
+      } catch (error) {
+        expect(error.toString()).to.eql(
+          (new HttpsError('deadline-exceeded', 'Game has started.')).toString()
+        )
+      }
     })
   })
 })
