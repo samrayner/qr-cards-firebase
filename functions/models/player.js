@@ -1,16 +1,14 @@
 class Player {
   constructor (
     uid,
-    role,
-    turn,
     location,
-    score
+    score,
+    playedQRCodes = []
   ) {
     this.uid = uid
-    this.role = role
-    this.turn = turn
     this.location = location
     this.score = score
+    this.playedQRCodes = playedQRCodes
   }
 
   toString () {
@@ -22,20 +20,18 @@ class Player {
       toFirestore (player) {
         return {
           uid: player.uid,
-          role: player.role,
-          turn: player.turn,
           location: player.location,
-          score: player.score
+          score: player.score,
+          playedQRCodes: player.playedQRCodes
         }
       },
       fromFirestore (snapshot, options) {
         const data = snapshot.data(options)
         return new Player(
           data.uid,
-          data.role,
-          data.turn,
           data.location,
-          data.score
+          data.score,
+          data.playedQRCodes
         )
       }
     }

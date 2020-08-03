@@ -17,7 +17,7 @@ describe('Lobby creation', () => {
   describe('when unauthenticated', () => {
     it('should fail with an error', async () => {
       try {
-        await test.wrap(app.lobby.create)(null, null)
+        await test.wrap(app.lobby.create)('{ "playerCount": 3 }', null)
         expect.fail()
       } catch (error) {
         expect(error.toString()).to.eql(
@@ -29,11 +29,11 @@ describe('Lobby creation', () => {
 
   describe('when no lobbies exist', () => {
     it('should create a new lobby with a unique code and the user as a player', async () => {
-      const lobbyCode = await test.wrap(app.lobby.create)(null, auth)
+      const lobbyCode = await test.wrap(app.lobby.create)('{ "playerCount": 3 }', auth)
 
       const lobbyRef = db.collection('lobbies').doc(lobbyCode)
       const lobby = await lobbyRef.get()
-      const profile = await lobbyRef.collection('playerProfiles').doc(user.uid).get()
+      const profile = await lobbyRef.collection('players').doc(user.uid).get()
 
       expect(lobby.data().code).to.eql(lobbyCode)
       expect(lobby.data().createdBy).to.eql(user.uid)
@@ -54,6 +54,7 @@ describe('Lobby creation', () => {
         .set(
           new Lobby(
             'AAAA',
+            2,
             new Date(),
             'creatorUID',
             null
@@ -62,7 +63,7 @@ describe('Lobby creation', () => {
     })
 
     it('should create a new lobby with a unique code', async () => {
-      const lobbyDocument = await app.lobby.createDocument(user.uid, codeGenerator)
+      const lobbyDocument = await app.lobby.createDocument(user.uid, 2, codeGenerator)
       expect(lobbyDocument.code).to.eql('BBBB')
       const lobby = await lobbyDocument.reference.get()
       expect(lobby.exists)
@@ -82,6 +83,7 @@ describe('Lobby creation', () => {
         .set(
           new Lobby(
             'CCCC',
+            2,
             new Date(),
             'creatorUID',
             null
@@ -91,7 +93,7 @@ describe('Lobby creation', () => {
 
     it('should fail with an error', async () => {
       try {
-        await app.lobby.createDocument(user.uid, codeGenerator)
+        await app.lobby.createDocument(user.uid, 2, codeGenerator)
         expect.fail()
       } catch (error) {
         expect(error.toString()).to.eql(
@@ -138,6 +140,7 @@ describe('Joining a lobby', () => {
         .set(
           new Lobby(
             'ZZZZ',
+            2,
             new Date(),
             'creatorUID',
             null
@@ -149,7 +152,7 @@ describe('Joining a lobby', () => {
       const lobbyRef = db.collection('lobbies').doc('ZZZZ')
       await lobbyRef.update({ gameUID: null })
       await test.wrap(app.lobby.join)('{ "code": "ZZZZ" }', auth)
-      const player = await lobbyRef.collection('playerProfiles').doc(user.uid).get()
+      const player = await lobbyRef.collection('players').doc(user.uid).get()
       expect(player.exists)
     })
 

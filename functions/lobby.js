@@ -1,6 +1,6 @@
 const functions = require('firebase-functions')
 const admin = require('./admin')
-const { Lobby, PlayerProfile } = require('./models')
+const { Lobby, LobbyPlayer } = require('./models')
 const { HttpsError } = require('firebase-functions/lib/providers/https')
 
 const generateCode = (length, attempt) => {
@@ -15,6 +15,7 @@ const generateCode = (length, attempt) => {
 
 const createDocument = async (
   userUID,
+  playerCount,
   generator = generateCode,
   attempt = 1
 ) => {
@@ -33,13 +34,14 @@ const createDocument = async (
     await lobbyReference.create(
       new Lobby(
         code,
+        playerCount,
         new Date(),
         userUID,
         null
       )
     )
   } catch (error) {
-    return await createDocument(userUID, generator, attempt + 1)
+    return await createDocument(userUID, playerCount, generator, attempt + 1)
   }
 
   return {
@@ -59,19 +61,19 @@ exports.create = functions
     }
 
     const userUID = context.auth.uid
-    const lobbyDocument = await createDocument(userUID)
+    const playerCount = JSON.parse(data).playerCount
+    const lobbyDocument = await createDocument(userUID, playerCount)
 
     await lobbyDocument
       .reference
-      .collection('playerProfiles')
-      .withConverter(PlayerProfile.firestoreConverter)
+      .collection('players')
+      .withConverter(LobbyPlayer.firestoreConverter)
       .doc(userUID)
       .set(
-        new PlayerProfile(
+        new LobbyPlayer(
           userUID,
           new Date(),
-          false,
-          null
+          false
         )
       )
 
@@ -106,15 +108,14 @@ exports.join = functions
     }
 
     await lobbyReference
-      .collection('playerProfiles')
-      .withConverter(PlayerProfile.firestoreConverter)
+      .collection('players')
+      .withConverter(LobbyPlayer.firestoreConverter)
       .doc(userUID)
       .set(
-        new PlayerProfile(
+        new LobbyPlayer(
           userUID,
           new Date(),
-          false,
-          null
+          false
         )
       )
   })
@@ -141,7 +142,7 @@ exports.leave = functions
     }
 
     await lobbyReference
-      .collection('playerProfiles')
+      .collection('players')
       .doc(userUID)
       .delete()
   })

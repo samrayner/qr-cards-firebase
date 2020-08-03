@@ -1,41 +1,41 @@
-class PlayerProfile {
+class LobbyPlayer {
   constructor (
     uid,
     joinedAt,
     isReady,
-    role
+    playedQRCodes = []
   ) {
     this.uid = uid
     this.joinedAt = joinedAt
     this.isReady = isReady
-    this.role = role
+    this.playedQRCodes = playedQRCodes
   }
 
   toString () {
-    return `PlayerProfile ${this.uid}`
+    return `LobbyPlayer ${this.uid}`
   }
 
   static get firestoreConverter () {
     return {
-      toFirestore (playerProfile) {
+      toFirestore (lobbyPlayer) {
         return {
-          uid: playerProfile.uid,
-          joinedAt: playerProfile.joinedAt,
-          isReady: playerProfile.isReady,
-          role: playerProfile.role
+          uid: lobbyPlayer.uid,
+          joinedAt: lobbyPlayer.joinedAt,
+          isReady: lobbyPlayer.isReady,
+          playedQRCodes: lobbyPlayer.playedQRCodes
         }
       },
       fromFirestore (snapshot, options) {
         const data = snapshot.data(options)
-        return new PlayerProfile(
+        return new LobbyPlayer(
           data.uid,
           data.joinedAt,
           data.isReady,
-          data.role
+          data.playedQRCodes
         )
       }
     }
   }
 }
 
-module.exports = PlayerProfile
+module.exports = LobbyPlayer

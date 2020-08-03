@@ -6,7 +6,7 @@ beforeEach(helpers.clearFirestore)
 after(helpers.deleteApps)
 
 const LOBBIES = 'lobbies'
-const PLAYER_PROFILES = 'playerProfiles'
+const PLAYERS = 'players'
 const LOBBY_CODE = 'ABCD'
 const USER_UID = helpers.generateUID()
 
@@ -127,7 +127,7 @@ describe('Lobby read', () => {
         .set({ code: LOBBY_CODE })
 
       await adminDB
-        .collection(helpers.path(LOBBIES, LOBBY_CODE, PLAYER_PROFILES))
+        .collection(helpers.path(LOBBIES, LOBBY_CODE, PLAYERS))
         .doc(USER_UID)
         .set({ uid: USER_UID })
 

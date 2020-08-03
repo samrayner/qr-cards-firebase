@@ -3,27 +3,38 @@ const functions = require('firebase-functions')
 const admin = require('./admin')
 admin.init()
 
-const { Game, Player, PlayerRole, PlayerProfile } = require('./models')
+const { Lobby, Game, Player, LobbyPlayer } = require('./models')
 const { v4: uuid } = require('uuid')
 
 exports.create = functions
   .region('europe-west1')
   .firestore
-  .document('/lobbies/{lobbyCode}/playerProfiles/{playerUID}')
+  .document('/lobbies/{lobbyCode}/players/{playerUID}')
   .onUpdate(async (change, context) => {
     const db = admin.getFirestore()
     const lobbyCode = context.params.lobbyCode
 
-    const playerProfilesReference = db
-      .collection(`lobbies/${lobbyCode}/playerProfiles`)
-      .withConverter(PlayerProfile.firestoreConverter)
+    const lobbyReference = db
+      .collection('lobbies')
+      .withConverter(Lobby.firestoreConverter)
+      .doc(lobbyCode)
 
-    const readyPlayersWithRole = await playerProfilesReference
-      .where('role', 'in', [PlayerRole.THIEF, PlayerRole.DETECTIVE])
-      .where('isReady', '==', true)
-      .get()
+    const lobbyPlayersReference = db
+      .collection(`lobbies/${lobbyCode}/players`)
+      .withConverter(LobbyPlayer.firestoreConverter)
 
-    if (readyPlayersWithRole.size !== 2) { return }
+    const lobby = await lobbyReference.get()
+    const lobbyPlayers = await lobbyPlayersReference.get()
+
+    let readyPlayerCount = 0
+
+    lobbyPlayers.forEach((lobbyPlayer) => {
+      if (lobbyPlayer.data().isReady) {
+        readyPlayerCount++
+      }
+    })
+
+    if (readyPlayerCount < lobby.data().playerCount) { return }
 
     const gameUID = uuid()
 
@@ -50,49 +61,31 @@ exports.create = functions
 
     const batch = db.batch()
 
-    const gamePlayerUIDs = []
-
-    // add the ready players to the game
-    readyPlayersWithRole.forEach((playerProfile) => {
-      const profile = playerProfile.data()
-
-      gamePlayerUIDs.push(profile.uid)
+    // add the ready players to the game, kick excess
+    lobbyPlayers.forEach((lobbyPlayer) => {
+      const data = lobbyPlayer.data()
 
       const playerReference = gameReference
         .collection('players')
         .withConverter(Player.firestoreConverter)
-        .doc(profile.uid)
+        .doc(data.uid)
 
-      batch.set(
-        playerReference,
-        new Player(
-          profile.uid,
-          profile.role,
-          profile.role === PlayerRole.THIEF ? 0 : 1,
-          0,
-          0
+      if (data.isReady) {
+        batch.set(
+          playerReference,
+          new Player(
+            data.uid,
+            { x: 0, y: 0 },
+            0
+          )
         )
-      )
+      } else {
+        batch.delete(lobbyPlayersReference.doc(data.uid))
+      }
     })
 
-    const allProfiles = await playerProfilesReference.get()
-
-    // remove all excess players from lobby
-    allProfiles
-      .forEach((playerProfile) => {
-        const profile = playerProfile.data()
-
-        if (gamePlayerUIDs.includes(profile.uid)) { return }
-
-        batch.delete(playerProfilesReference.doc(profile.uid))
-      })
-
     // link the lobby to the created game
-    const lobbyReference = db
-      .collection('lobbies')
-      .doc(lobbyCode)
-
-    await batch.update(
+    batch.update(
       lobbyReference,
       { gameUID: gameUID }
     )

@@ -13,7 +13,7 @@ service cloud.firestore {
     }
 
     function isInLobby(lobbyCode) {
-      return exists(/databases/$(database)/documents/lobbies/$(lobbyCode)/playerProfiles/$(request.auth.uid));
+      return exists(/databases/$(database)/documents/lobbies/$(lobbyCode)/players/$(request.auth.uid));
     }
 
     function getLobby(lobbyCode) {
@@ -34,11 +34,11 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       allow update, delete: if getLobby(lobbyCode).data.createdBy == request.auth.uid;
 
-      match /playerProfiles/{userUID=**} {
+      match /players/{userUID=**} {
         allow read: if isInLobby(lobbyCode);
       }
 
-      match /playerProfiles/{userUID} {
+      match /players/{userUID} {
       	allow write, delete: if isUser(userUID);
       }
     }
