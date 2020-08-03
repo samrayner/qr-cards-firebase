@@ -26,15 +26,16 @@ exports.create = functions
     const lobby = await lobbyReference.get()
     const lobbyPlayers = await lobbyPlayersReference.get()
 
-    let readyPlayerCount = 0
+    const readyPlayerUIDs = []
 
     lobbyPlayers.forEach((lobbyPlayer) => {
-      if (lobbyPlayer.data().isReady) {
-        readyPlayerCount++
+      const data = lobbyPlayer.data()
+      if (data.isReady) {
+        readyPlayerUIDs.push(data.uid)
       }
     })
 
-    if (readyPlayerCount < lobby.data().playerCount) { return }
+    if (readyPlayerUIDs.length < lobby.data().playerCount) { return }
 
     const gameUID = uuid()
 
@@ -49,9 +50,7 @@ exports.create = functions
         new Game(
           gameUID,
           new Date(),
-          0,
-          {},
-          null
+          readyPlayerUIDs
         )
       )
     } catch (error) {

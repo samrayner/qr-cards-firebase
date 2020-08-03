@@ -2,14 +2,14 @@ class Game {
   constructor (
     uid,
     startedAt,
-    turnCount,
-    alertLevels,
-    endedAt
+    turnOrder = [],
+    turnCount = 0,
+    endedAt = null
   ) {
     this.uid = uid
     this.startedAt = startedAt
+    this.turnOrder = turnOrder
     this.turnCount = turnCount
-    this.alertLevels = alertLevels
     this.endedAt = endedAt
   }
 
@@ -23,8 +23,8 @@ class Game {
         return {
           uid: game.uid,
           startedAt: game.startedAt,
+          turnOrder: game.turnOrder,
           turnCount: game.turnCount,
-          alertLevels: game.alertLevels,
           endedAt: game.endedAt
         }
       },
@@ -33,8 +33,8 @@ class Game {
         return new Game(
           data.uid,
           data.startedAt,
+          data.turnOrder,
           data.turnCount,
-          data.alertLevels,
           data.endedAt
         )
       }
