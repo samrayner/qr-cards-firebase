@@ -45,8 +45,7 @@ describe('Game creation', () => {
       .create(
         new LobbyPlayer(
           idlePlayerUID,
-          new Date(),
-          false
+          new Date()
         )
       )
 
@@ -55,8 +54,7 @@ describe('Game creation', () => {
       .create(
         new LobbyPlayer(
           player1UID,
-          new Date(),
-          false
+          new Date()
         )
       )
 
@@ -65,15 +63,14 @@ describe('Game creation', () => {
       .create(
         new LobbyPlayer(
           player2UID,
-          new Date(),
-          false
+          new Date()
         )
       )
 
     // should NOT trigger the function - only 1 player ready
     await lobbyPlayersReference
       .doc(player1UID)
-      .update({ isReady: true })
+      .update({ color: 1 })
 
     await waitForCloudFunction()
 
@@ -85,7 +82,7 @@ describe('Game creation', () => {
     // should trigger the function - 2 players ready
     await lobbyPlayersReference
       .doc(player2UID)
-      .update({ isReady: true })
+      .update({ color: 2 })
 
     await waitForCloudFunction()
 

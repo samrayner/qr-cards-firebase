@@ -2,17 +2,19 @@ class LobbyPlayer {
   constructor (
     uid,
     joinedAt,
-    isReady,
-    playedQRCodes = []
+    color = null
   ) {
     this.uid = uid
     this.joinedAt = joinedAt
-    this.isReady = isReady
-    this.playedQRCodes = playedQRCodes
+    this.color = color
   }
 
   toString () {
     return `LobbyPlayer ${this.uid}`
+  }
+
+  get isReady () {
+    return this.color != null
   }
 
   static get firestoreConverter () {
@@ -21,8 +23,7 @@ class LobbyPlayer {
         return {
           uid: lobbyPlayer.uid,
           joinedAt: lobbyPlayer.joinedAt,
-          isReady: lobbyPlayer.isReady,
-          playedQRCodes: lobbyPlayer.playedQRCodes
+          color: lobbyPlayer.color
         }
       },
       fromFirestore (snapshot, options) {
@@ -30,8 +31,7 @@ class LobbyPlayer {
         return new LobbyPlayer(
           data.uid,
           data.joinedAt,
-          data.isReady,
-          data.playedQRCodes
+          data.color
         )
       }
     }

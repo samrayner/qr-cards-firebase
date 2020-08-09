@@ -72,8 +72,7 @@ exports.create = functions
       .set(
         new LobbyPlayer(
           userUID,
-          new Date(),
-          false
+          new Date()
         )
       )
 
@@ -114,8 +113,7 @@ exports.join = functions
       .set(
         new LobbyPlayer(
           userUID,
-          new Date(),
-          false
+          new Date()
         )
       )
   })
