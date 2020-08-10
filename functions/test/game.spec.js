@@ -74,8 +74,8 @@ describe('Game creation', () => {
 
     await waitForCloudFunction()
 
-    const idleUserProfileBefore = await lobbyPlayersReference.doc(idlePlayerUID).get()
-    expect(idleUserProfileBefore.exists).to.be.true
+    const idlePlayerBefore = await lobbyPlayersReference.doc(idlePlayerUID).get()
+    expect(idlePlayerBefore.exists).to.be.true
     const lobbyBefore = await lobbyReference.get()
     expect(lobbyBefore.data().gameUID).to.be.null
 
@@ -97,8 +97,11 @@ describe('Game creation', () => {
     expect(player1.exists).to.be.true
     expect(player2.exists).to.be.true
 
-    // should kick the idle player profile from the lobby
-    const idleUserProfileAfter = await lobbyPlayersReference.doc(idlePlayerUID).get()
-    expect(idleUserProfileAfter.exists).to.be.false
+    // should kick only the idle player profile from the lobby
+    const player1After = await lobbyPlayersReference.doc(player1UID).get()
+    expect(player1After.exists).to.be.true
+
+    const idlePlayerAfter = await lobbyPlayersReference.doc(idlePlayerUID).get()
+    expect(idlePlayerAfter.exists).to.be.false
   }).timeout(10000)
 })

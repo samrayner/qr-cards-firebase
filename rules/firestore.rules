@@ -16,6 +16,10 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/lobbies/$(lobbyCode)/players/$(request.auth.uid));
     }
 
+    function isInGame(gameUID) {
+      return exists(/databases/$(database)/documents/games/$(gameUID)/players/$(request.auth.uid));
+    }
+
     function getLobby(lobbyCode) {
       return get(/databases/$(database)/documents/lobbies/$(lobbyCode));
     }
@@ -40,6 +44,14 @@ service cloud.firestore {
 
       match /players/{userUID} {
       	allow write, delete: if isUser(userUID);
+      }
+    }
+
+    match /games/{gameUID} {
+      allow read: if isInGame(gameUID);
+
+      match /players/{userUID=**} {
+        allow read, update: if isInGame(gameUID);
       }
     }
   }

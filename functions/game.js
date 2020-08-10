@@ -74,8 +74,8 @@ exports.create = functions
           playerReference,
           new Player(
             data.uid,
-            { x: 0, y: 0 },
-            0
+            data.color,
+            { x: 0, y: 0 }
           )
         )
       } else {
