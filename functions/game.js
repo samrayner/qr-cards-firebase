@@ -60,6 +60,21 @@ exports.create = functions
 
     const batch = db.batch()
 
+    const boardWidth = 9
+    const boardHeight = 5
+    const startLocations = [
+      { x: 0, y: 1 },
+      { x: 1, y: 0 },
+      { x: boardWidth - 2, y: 0 },
+      { x: boardWidth - 1, y: 1 },
+      { x: 0, y: boardHeight - 2 },
+      { x: 1, y: boardHeight - 1 },
+      { x: boardWidth - 1, y: boardHeight - 2 },
+      { x: boardWidth - 2, y: boardHeight - 1 }
+    ]
+    shuffle(startLocations)
+    let startLocationIndex = 0
+
     // add the ready players to the game, kick excess
     lobbyPlayers.forEach((lobbyPlayer) => {
       const data = lobbyPlayer.data()
@@ -75,9 +90,10 @@ exports.create = functions
           new Player(
             data.uid,
             data.color,
-            { x: 0, y: 0 }
+            startLocations[startLocationIndex]
           )
         )
+        startLocationIndex++
       } else {
         batch.delete(lobbyPlayersReference.doc(data.uid))
       }
@@ -91,3 +107,17 @@ exports.create = functions
 
     await batch.commit()
   })
+
+const shuffle = (array) => {
+  let counter = array.length
+
+  while (counter > 0) {
+    const index = Math.floor(Math.random() * counter)
+    counter--
+    const temp = array[counter]
+    array[counter] = array[index]
+    array[index] = temp
+  }
+
+  return array
+}
