@@ -35,6 +35,8 @@ exports.create = functions
       }
     })
 
+    shuffle(readyPlayerUIDs)
+
     if (readyPlayerUIDs.length < lobby.data().playerCount) { return }
 
     const gameUID = uuid()
