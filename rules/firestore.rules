@@ -48,7 +48,7 @@ service cloud.firestore {
     }
 
     match /games/{gameUID} {
-      allow read: if isInGame(gameUID);
+      allow read, update: if isInGame(gameUID);
 
       match /players/{userUID=**} {
         allow read, update: if isInGame(gameUID);

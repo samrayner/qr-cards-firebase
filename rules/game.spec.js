@@ -79,3 +79,59 @@ describe('Game read', () => {
     })
   })
 })
+
+describe('Game update', () => {
+  const adminDB = helpers.getAdminFirestore()
+
+  describe('when unauthenticated', () => {
+    const db = helpers.getAuthedFirestore(null)
+
+    it('should fail', async () => {
+      await adminDB
+        .collection(GAMES)
+        .doc(GAME_UID)
+        .set({ uid: GAME_UID, turnCount: 0 })
+
+      const doc = db
+        .collection(GAMES)
+        .doc(GAME_UID)
+
+      await firebase.assertFails(doc.set({ uid: GAME_UID, turnCount: 1 }))
+    })
+  })
+
+  describe('when authenticated', () => {
+    const db = helpers.getAuthedFirestore({ uid: USER_UID })
+
+    it('fails if not in game', async () => {
+      await adminDB
+        .collection(GAMES)
+        .doc(GAME_UID)
+        .set({ uid: GAME_UID, turnCount: 0 })
+
+      const doc = db
+        .collection(GAMES)
+        .doc(GAME_UID)
+
+      await firebase.assertFails(doc.set({ uid: GAME_UID, turnCount: 1 }))
+    })
+
+    it('succeeds if in game', async () => {
+      await adminDB
+        .collection(GAMES)
+        .doc(GAME_UID)
+        .set({ uid: GAME_UID, turnCount: 0 })
+
+      await adminDB
+        .collection(helpers.path(GAMES, GAME_UID, PLAYERS))
+        .doc(USER_UID)
+        .set({ uid: USER_UID })
+
+      const doc = db
+        .collection(GAMES)
+        .doc(GAME_UID)
+
+      await firebase.assertSucceeds(doc.set({ uid: GAME_UID, turnCount: 1 }))
+    })
+  })
+})
