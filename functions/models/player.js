@@ -4,13 +4,13 @@ class Player {
     color,
     location,
     score = 0,
-    playedQRCodes = []
+    effects = []
   ) {
     this.uid = uid
     this.color = color
     this.location = location
     this.score = score
-    this.playedQRCodes = playedQRCodes
+    this.effects = effects
   }
 
   toString () {
@@ -25,7 +25,7 @@ class Player {
           color: player.color,
           location: player.location,
           score: player.score,
-          playedQRCodes: player.playedQRCodes
+          effects: player.effects
         }
       },
       fromFirestore (snapshot, options) {
@@ -35,7 +35,7 @@ class Player {
           data.color,
           data.location,
           data.score,
-          data.playedQRCodes
+          data.effects
         )
       }
     }
