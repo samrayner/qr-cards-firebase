@@ -36,7 +36,7 @@ service cloud.firestore {
 
     match /lobbies/{lobbyCode} {
       allow create: if isAuthenticated();
-      allow update, delete: if getLobby(lobbyCode).data.createdBy == request.auth.uid;
+      allow update, delete: if getLobby(lobbyCode).data.creatorUID == request.auth.uid;
 
       match /players/{userUID=**} {
         allow read: if isInLobby(lobbyCode);

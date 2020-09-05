@@ -3,13 +3,13 @@ class Lobby {
     code,
     playerCount,
     createdAt,
-    createdBy,
+    creatorUID,
     gameUID
   ) {
     this.code = code
     this.playerCount = playerCount
     this.createdAt = createdAt
-    this.createdBy = createdBy
+    this.creatorUID = creatorUID
     this.gameUID = gameUID
   }
 
@@ -24,7 +24,7 @@ class Lobby {
           code: lobby.code,
           playerCount: lobby.playerCount,
           createdAt: lobby.createdAt,
-          createdBy: lobby.createdBy,
+          creatorUID: lobby.creatorUID,
           gameUID: lobby.gameUID
         }
       },
@@ -34,7 +34,7 @@ class Lobby {
           data.code,
           data.playerCount,
           data.createdAt,
-          data.createdBy,
+          data.creatorUID,
           data.gameUID
         )
       }

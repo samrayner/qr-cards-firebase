@@ -36,7 +36,7 @@ describe('Lobby creation', () => {
       const profile = await lobbyRef.collection('players').doc(user.uid).get()
 
       expect(lobby.data().code).to.eql(lobbyCode)
-      expect(lobby.data().createdBy).to.eql(user.uid)
+      expect(lobby.data().creatorUID).to.eql(user.uid)
       expect(profile.data().uid).to.eql(user.uid)
     })
   })

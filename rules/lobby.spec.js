@@ -40,7 +40,7 @@ describe('Lobby update & deletion', () => {
       await adminDB
         .collection(LOBBIES)
         .doc(LOBBY_CODE)
-        .set({ createdBy: USER_UID })
+        .set({ creatorUID: USER_UID })
 
       const doc = db.collection(LOBBIES).doc(LOBBY_CODE)
       await firebase.assertSucceeds(doc.update({ hello: 'world' }))
@@ -51,7 +51,7 @@ describe('Lobby update & deletion', () => {
       await adminDB
         .collection(LOBBIES)
         .doc(LOBBY_CODE)
-        .set({ createdBy: helpers.generateUID() })
+        .set({ creatorUID: helpers.generateUID() })
 
       const doc = db.collection(LOBBIES).doc(LOBBY_CODE)
       await firebase.assertFails(doc.update({ hello: 'world' }))
