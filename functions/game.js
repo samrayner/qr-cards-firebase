@@ -16,36 +16,12 @@ exports.create = functions
     }
 
     const db = admin.getFirestore()
-    const lobbyCode = JSON.parse(data).lobbyCode
+    const params = JSON.parse(data)
+    const lobbyCode = params.lobbyCode
+    const playerColors = params.playerColors
 
-    const lobbyReference = admin.getFirestore()
-      .collection('lobbies')
-      .withConverter(Lobby.firestoreConverter)
-      .doc(lobbyCode)
-
-    const lobbyPlayersReference = db
-      .collection(`lobbies/${lobbyCode}/players`)
-      .withConverter(LobbyPlayer.firestoreConverter)
-
-    const lobby = await lobbyReference.get()
-    const lobbyPlayers = await lobbyPlayersReference.get()
-
-    if (!lobby.exists) {
-      throw new HttpsError('not-found', 'Lobby not found.')
-    }
-
-    const readyPlayerUIDs = []
-
-    lobbyPlayers.forEach((lobbyPlayer) => {
-      const data = lobbyPlayer.data()
-      if (data.isReady) {
-        readyPlayerUIDs.push(data.uid)
-      }
-    })
-
+    const readyPlayerUIDs = Object.keys(playerColors)
     shuffle(readyPlayerUIDs)
-
-    if (readyPlayerUIDs.length < lobby.data().playerCount) { return }
 
     const gameUID = uuid()
 
@@ -68,8 +44,6 @@ exports.create = functions
       return
     }
 
-    const batch = db.batch()
-
     const boardWidth = 9
     const boardHeight = 5
     const startLocations = [
@@ -85,29 +59,30 @@ exports.create = functions
     shuffle(startLocations)
     let startLocationIndex = 0
 
-    // add the ready players to the game, kick excess
-    lobbyPlayers.forEach((lobbyPlayer) => {
-      const data = lobbyPlayer.data()
+    const batch = db.batch()
 
+    // add the ready players to the game
+    for (const uid of readyPlayerUIDs) {
       const playerReference = gameReference
         .collection('players')
         .withConverter(Player.firestoreConverter)
-        .doc(data.uid)
+        .doc(uid)
 
-      if (data.isReady) {
-        batch.set(
-          playerReference,
-          new Player(
-            data.uid,
-            data.color,
-            startLocations[startLocationIndex]
-          )
+      batch.set(
+        playerReference,
+        new Player(
+          uid,
+          playerColors[uid],
+          startLocations[startLocationIndex]
         )
-        startLocationIndex++
-      } else {
-        batch.delete(lobbyPlayersReference.doc(data.uid))
-      }
-    })
+      )
+      startLocationIndex++
+    }
+
+    const lobbyReference = admin.getFirestore()
+      .collection('lobbies')
+      .withConverter(Lobby.firestoreConverter)
+      .doc(lobbyCode)
 
     // link the lobby to the created game
     batch.update(

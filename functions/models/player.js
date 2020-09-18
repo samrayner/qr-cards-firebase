@@ -5,7 +5,8 @@ class Player {
     location,
     score = 0,
     effects = [],
-    qrCodePayloadsThisRound = []
+    qrCodePayloadsThisRound = [],
+    isTakingTurn = false
   ) {
     this.uid = uid
     this.color = color
@@ -13,6 +14,7 @@ class Player {
     this.score = score
     this.effects = effects
     this.qrCodePayloadsThisRound = qrCodePayloadsThisRound
+    this.isTakingTurn = isTakingTurn
   }
 
   toString () {
@@ -28,7 +30,8 @@ class Player {
           location: player.location,
           score: player.score,
           effects: player.effects,
-          qrCodePayloadsThisRound: player.qrCodePayloadsThisRound
+          qrCodePayloadsThisRound: player.qrCodePayloadsThisRound,
+          isTakingTurn: player.isTakingTurn
         }
       },
       fromFirestore (snapshot, options) {
@@ -39,7 +42,8 @@ class Player {
           data.location,
           data.score,
           data.effects,
-          data.qrCodePayloadsThisRound
+          data.qrCodePayloadsThisRound,
+          data.isTakingTurn
         )
       }
     }
