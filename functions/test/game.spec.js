@@ -2,13 +2,17 @@ const { expect } = require('chai')
 const test = require('firebase-functions-test')({
   projectId: process.env.GCLOUD_PROJECT
 })
-const { waitForCloudFunction } = require('./wait')
+
 const { LobbyPlayer, Lobby } = require('../models')
+const { HttpsError } = require('firebase-functions/lib/providers/https')
 
 const admin = require('../admin')
 admin.init()
 
+const app = require('../index')
 const db = admin.getFirestore()
+const user = test.auth.exampleUserRecord()
+const auth = { auth: { uid: user.uid } }
 
 const lobbyReference = db
   .collection('lobbies')
@@ -22,86 +26,99 @@ const lobbyPlayersReference = lobbyReference
 describe('Game creation', () => {
   after(test.cleanup)
 
-  before(async () => {
-    await lobbyReference
-      .create(
-        new Lobby(
-          'AAAA',
-          2,
-          new Date(),
-          'creatorUID',
-          null
+  describe('when unauthenticated', () => {
+    it('should fail with an error', async () => {
+      try {
+        await test.wrap(app.game.create)('{ "lobbyCode": "invalid" }', null)
+        expect.fail()
+      } catch (error) {
+        expect(error.toString()).to.eql(
+          (new HttpsError('permission-denied', 'Not authorized')).toString()
         )
-      )
+      }
+    })
   })
 
-  it('should create the game, move the ready players into it and kick the rest from the lobby', async () => {
-    const idlePlayerUID = 'idle'
-    const player1UID = 'player1'
-    const player2UID = 'player2'
-
-    await lobbyPlayersReference
-      .doc(idlePlayerUID)
-      .create(
-        new LobbyPlayer(
-          idlePlayerUID,
-          new Date()
+  describe('when the lobby does not exist', () => {
+    it('should fail with an error', async () => {
+      try {
+        await test.wrap(app.game.create)('{ "lobbyCode": "invalid" }', auth)
+        expect.fail()
+      } catch (error) {
+        expect(error.toString()).to.eql(
+          (new HttpsError('not-found', 'Lobby not found.')).toString()
         )
-      )
+      }
+    })
+  })
 
-    await lobbyPlayersReference
-      .doc(player1UID)
-      .create(
-        new LobbyPlayer(
-          player1UID,
-          new Date()
+  describe('when the lobby exists', () => {
+    before(async () => {
+      await lobbyReference
+        .create(
+          new Lobby(
+            'AAAA',
+            2,
+            new Date(),
+            'creatorUID',
+            null
+          )
         )
-      )
+    })
 
-    await lobbyPlayersReference
-      .doc(player2UID)
-      .create(
-        new LobbyPlayer(
-          player2UID,
-          new Date()
+    it('should create the game, move the ready players into it and kick the rest from the lobby', async () => {
+      const idlePlayerUID = 'idle'
+      const player1UID = 'player1'
+      const player2UID = 'player2'
+
+      await lobbyPlayersReference
+        .doc(idlePlayerUID)
+        .create(
+          new LobbyPlayer(
+            idlePlayerUID,
+            new Date()
+          )
         )
-      )
 
-    // should NOT trigger the function - only 1 player ready
-    await lobbyPlayersReference
-      .doc(player1UID)
-      .update({ color: 1 })
+      await lobbyPlayersReference
+        .doc(player1UID)
+        .create(
+          new LobbyPlayer(
+            player1UID,
+            new Date(),
+            1
+          )
+        )
 
-    await waitForCloudFunction()
+      await lobbyPlayersReference
+        .doc(player2UID)
+        .create(
+          new LobbyPlayer(
+            player2UID,
+            new Date(),
+            2
+          )
+        )
 
-    const idlePlayerBefore = await lobbyPlayersReference.doc(idlePlayerUID).get()
-    expect(idlePlayerBefore.exists).to.be.true
-    const lobbyBefore = await lobbyReference.get()
-    expect(lobbyBefore.data().gameUID).to.be.null
+      await test.wrap(app.game.create)('{ "lobbyCode": "AAAA" }', auth)
 
-    // should trigger the function - 2 players ready
-    await lobbyPlayersReference
-      .doc(player2UID)
-      .update({ color: 2 })
+      // should set the game UID
+      const lobbyAfter = await lobbyReference.get()
+      const gameUID = lobbyAfter.data().gameUID
+      expect(gameUID).to.not.be.null
 
-    await waitForCloudFunction()
+      // should move the players into the game
+      const player1 = await db.collection(`games/${gameUID}/players`).doc(player1UID).get()
+      const player2 = await db.collection(`games/${gameUID}/players`).doc(player2UID).get()
+      expect(player1.exists).to.be.true
+      expect(player2.exists).to.be.true
 
-    // should set the game UID
-    const lobbyAfter = await lobbyReference.get()
-    const gameUID = lobbyAfter.data().gameUID
-    expect(gameUID).to.not.be.null
+      // should kick only the idle player profile from the lobby
+      const player1After = await lobbyPlayersReference.doc(player1UID).get()
+      expect(player1After.exists).to.be.true
 
-    // should move the players into the game
-    const player1 = await db.collection(`games/${gameUID}/players`).doc(player1UID).get()
-    const player2 = await db.collection(`games/${gameUID}/players`).doc(player2UID).get()
-    expect(player1.exists).to.be.true
-    expect(player2.exists).to.be.true
-
-    // should kick only the idle player profile from the lobby
-    const player1After = await lobbyPlayersReference.doc(player1UID).get()
-    expect(player1After.exists).to.be.true
-
-    const idlePlayerAfter = await lobbyPlayersReference.doc(idlePlayerUID).get()
-    expect(idlePlayerAfter.exists).to.be.false
-  }).timeout(10000)
+      const idlePlayerAfter = await lobbyPlayersReference.doc(idlePlayerUID).get()
+      expect(idlePlayerAfter.exists).to.be.false
+    })
+  })
 })

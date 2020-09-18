@@ -4,17 +4,21 @@ const admin = require('./admin')
 admin.init()
 
 const { Lobby, Game, Player, LobbyPlayer } = require('./models')
+const { HttpsError } = require('firebase-functions/lib/providers/https')
 const { v4: uuid } = require('uuid')
 
 exports.create = functions
   .region('europe-west1')
-  .firestore
-  .document('/lobbies/{lobbyCode}/players/{playerUID}')
-  .onUpdate(async (change, context) => {
-    const db = admin.getFirestore()
-    const lobbyCode = context.params.lobbyCode
+  .https
+  .onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new HttpsError('permission-denied', 'Not authorized')
+    }
 
-    const lobbyReference = db
+    const db = admin.getFirestore()
+    const lobbyCode = JSON.parse(data).lobbyCode
+
+    const lobbyReference = admin.getFirestore()
       .collection('lobbies')
       .withConverter(Lobby.firestoreConverter)
       .doc(lobbyCode)
@@ -25,6 +29,10 @@ exports.create = functions
 
     const lobby = await lobbyReference.get()
     const lobbyPlayers = await lobbyPlayersReference.get()
+
+    if (!lobby.exists) {
+      throw new HttpsError('not-found', 'Lobby not found.')
+    }
 
     const readyPlayerUIDs = []
 

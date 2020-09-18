@@ -1,13 +1,16 @@
 const { expect } = require('chai')
-const admin = require('firebase-admin')
+
+const admin = require('../admin')
+admin.init()
+
 const test = require('firebase-functions-test')({
   projectId: process.env.GCLOUD_PROJECT
 })
-const app = require('../index')
 const { Lobby } = require('../models')
 const { HttpsError } = require('firebase-functions/lib/providers/https')
 
-const db = admin.firestore()
+const app = require('../index')
+const db = admin.getFirestore()
 const user = test.auth.exampleUserRecord()
 const auth = { auth: { uid: user.uid } }
 
